@@ -1,0 +1,27 @@
+---
+title: "Assignment 3"
+author: "Pierre-Olivier Couture"
+format: html
+editor: visual
+---
+
+## Assignment 3
+
+```{r}
+#| label: Packages
+
+
+
+```
+
+
+
+```{r}
+#| label: 
+
+
+
+
+```
+
+The `echo: false` option disables the printing of code (only output is displayed).
