@@ -56,14 +56,56 @@ apa.cor.table(describe_vars, filename = "Correlation Matrix of Satisfaction with
 
 
 ```
-```{r}
-#| label: 
 
-h1_vars <- select(A4, swl, tipm_e, tipm_n)
-apa.cor.table(h1_vars, table.number = 1, filename = "H1_Correlation_Table_1.doc")
+```{r}
+#| label: H1 Code
+# This is the code I will use to test all assumptions. 
+
+H1 <- lm(swl ~ tipm_e, data = A4)
+
+# Visualize the model
+visualize(H1, plot = "residuals")
+
+# Model Output for the model
+estimates(H1)
+summary(H1)
+
+residuals_H1 <- residuals(H1)
+
+# Using this to examine the independence of observations since the data was collected over several time points. 
+acf(residuals_H1)
+
+# Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl and tipm_e and allows me to visualize the relationship.
+
+flexplot(swl ~ tipm_e, data = A4)
 
 ```
+The code above does an assumption check for H1. 
 
+-- The Histogram of Residuals shows that the residuals are approximately normally distributed but with a slight left skew.If this is the only violation of the assumptions, the model is still considered reliable. However, if other assumptions are also violated, the model may not be valid. NORMALITY of RESIDUALS assumption is met. 
+
+-- The RDP is flat meaning this assumption is met. LINEARITY assumption is met.
+
+-- The S-L Plot is relatively flat and straight meaning this assumption is met. HOMOSKEDACITY assumption is met.
+
+-- The ACF plot shows that several of the lines extend past the 95% CI range meaning that the residuals at one time point seem to be related to the residuals from previous time points. The assumption is not met. INDEPENDENCE of OBSERVATIONS assumption NOT met.
+
+-- Multicolinearity was not assessed since I was only using 1 predictor and this cannot be calculated. So multicolinearity is not an issue in H1. 
+
+All I need to do is mention that the independence of observations assumption is violated and that I would conduct a mixed-effects model to model the temporal dependencies between observations. *** ASKED ASHLEY IF THIS NEEDED TO BE INCLUDED OR IF I CAN JUST MENTION IT ***
+
+Using the estimate and summary function here are the findings to make it easier to write about in the Word doc.
+
+Estimate for tipm_e = 0.40 meaning the association is positive and this is considered a moderate association.
+-- The 95% CI are 0.37 and 0.43. Since these do not cross 0 we can say this association is statistically significant. The CI also have a small margin of error so we can say the estimate is relatively precise. 
+
+
+```{r}
+#| label: H2 Code
+
+
+
+```
 
 
 
