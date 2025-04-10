@@ -7,21 +7,72 @@ editor: visual
 
 ## Assignment 3
 
+This is all the code I used for Assignment 3
+
 ```{r}
 #| label: Packages
+# This section of code installs and initializes all the packages I will use throughout the assignment. The flexplot packages was "#" out because it kept asking me for updates and will not let me render into a html file. The code still works fine with this adjustment since the package is already installed on R. 
+library(lme4)
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
 
+#install.packages("remotes")
 
+#remotes::install_github("dustinfife/flexplot")
+
+install.packages("apaTables")
+
+library(haven)
+library(flexplot)
+library(tidyverse)
+library(dplyr)
+library(flexplot)
+library(apaTables)
+install.packages("janitor")
+library(janitor)
 
 ```
 
+```{r}
+#| label: Load in the data
+# This section of code loads in the data and cleans the names to remove all capital letters to make it easier when I need to call on the variables throughout my code. 
+
+A4 <- read_sav("~/Desktop/P6003.A4.sav") %>% 
+  clean_names()
+View(A4)
+
+```
+
+```{r}
+#| label: Correlation table
+# I used this section of code to create a data frame that includes all the variables and makes it easier for me to report the descriptive statistics. Could include them in a table if I have time to look at the correct code to do this since the apaTables package does not have a code to report descriptive statistics and I would need to find more background information.  
+
+describe_vars <- A4 %>% select(swl, tipm_e, tipm_n)
+psych::describe(describe_vars)
+
+# This part of the code will provide me with the correlation between all the variables using only the rows with no missing data for the variables I am interested in. This will only not include variables if any of the variables have missing data for the variables of interest.
+
+cor(describe_vars, use = "pairwise")
+apa.cor.table(describe_vars, filename = "Correlation Matrix of Satisfaction with Life, Extraversion, and Neuroticism.doc", table.number = 1)
 
 
+```
 ```{r}
 #| label: 
 
-
-
+h1_vars <- select(A4, swl, tipm_e, tipm_n)
+apa.cor.table(h1_vars, table.number = 1, filename = "H1_Correlation_Table_1.doc")
 
 ```
+
+
+
+
+
+
+
+
+
+
+
 
 The `echo: false` option disables the printing of code (only output is displayed).
