@@ -20,8 +20,11 @@ options(repos = c(CRAN = "https://cran.rstudio.com/"))
 #remotes::install_github("dustinfife/flexplot")
 
 install.packages("apaTables")
+install.packages("broom.mixed")
 
 library(haven)
+library(broom.mixed)
+library(performance)
 library(car)
 library(flexplot)
 library(tidyverse)
@@ -59,7 +62,6 @@ apa.cor.table(describe_vars, filename = "Correlation Matrix of Satisfaction with
 ```{r}
 #| label: H1 Code
 # This is the code I will use to test all assumptions and calculate all the data needed for H1. 
-
 # Step 1: Creating the regression model
 H1 <- lm(swl ~ tipm_e, data = A4)
 
@@ -74,15 +76,39 @@ summary(H1)
 residuals_H1 <- residuals(H1)
 
 # Step 5: Check for independence of observations (ACF plot for residuals)
-# Using this to examine the independence of observations since the data was collected over several time points. 
+# Using this to examine the independence of observations since the data was collected over several time points.
 acf(residuals_H1)
 
-# Step 6: Visualize the relationship between swl and tipm_e using flexplot
-# Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl and tipm_e and allows me to visualize the relationship.
-flexplot(swl ~ tipm_e, data = A4)
+# Step 6: Check normality of residuals (Q-Q plot)
+# Use Q-Q plot to visually check if residuals follow a normal distribution
+qqnorm(residuals_H1)
+qqline(residuals_H1, col = "red")
 
-apa.reg.table(H1, filename = "H1 Regression Table 2.doc",  table.number = 2)
+# Step 7: Mixed-effects model to account for non-independence of observations
+# Random intercept for id (subject), fixed effect for tipm_e (extraversion), and factor(day)
+H1_mixed <- lmer(swl ~ tipm_e + factor(day) + (1 | id), data = A4)
 
+# Step 8: Display the summary of the mixed-effects model
+summary(H1_mixed)
+
+# Step 9: Check residuals of the mixed-effects model
+# Plot residuals of the mixed-effects model to check for patterns or outliers
+residuals_H1_mixed <- residuals(H1_mixed)
+plot(residuals_H1_mixed)
+
+# Step 10: Check random effects
+# Random intercept variance for id
+ranef(H1_mixed)
+
+# Step 11: Check confidence intervals for mixed model coefficients
+# To get confidence intervals for the fixed effects
+confint(H1_mixed)
+
+# Step 12: Intraclass Correlation (ICC) to see the proportion of variance explained by random effects
+icc(H1_mixed)
+
+# Step 13: R-squared for the mixed-effects model (marginal and conditional R²)
+r2(H1_mixed)
 
 ```
 The code above does an assumption check for H1 and creates a model for H1. Below is my interpretation of everything to help me with the write-up later.  
@@ -129,12 +155,42 @@ residuals_H2 <- residuals(H2)
 # Using this to examine the independence of observations since the data was collected over several time points.
 acf(residuals_H2)
 
-# Step 6: Visualize the relationship between swl and tipm_n using flexplot
-# Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl and tipm_n and allows me to visualize the relationship.
-flexplot(swl ~ tipm_n, data = A4)
+# Step 6: Check normality of residuals (Q-Q plot)
+# Use Q-Q plot to visually check if residuals follow a normal distribution
+qqnorm(residuals_H2)
+qqline(residuals_H2, col = "red")
 
+# Step 7: Check homoscedasticity (Residuals vs Fitted Plot)
+# Plot residuals against fitted values to check for constant variance
+plot(fitted(H2), residuals_H2)
+abline(h = 0, col = "red")
 
-apa.reg.table(H1, filename = "H1 Regression Table 1.doc",  table.number = 1)
+# Step 8: Mixed-effects model to account for non-independence of observations
+# Random intercept for id (subject), fixed effect for tipm_n (new measure), and factor(day)
+H2_mixed <- lmer(swl ~ tipm_n + factor(day) + (1 | id), data = A4)
+
+# Step 9: Display the summary of the mixed-effects model
+summary(H2_mixed)
+
+# Step 10: Check residuals of the mixed-effects model
+# Plot residuals of the mixed-effects model to check for patterns or outliers
+residuals_H2_mixed <- residuals(H2_mixed)
+plot(residuals_H2_mixed)
+
+# Step 11: Check random effects
+# Random intercept variance for id
+ranef(H2_mixed)
+
+# Step 12: Check confidence intervals for mixed model coefficients
+# To get confidence intervals for the fixed effects
+confint(H2_mixed)
+
+# Step 13: Intraclass Correlation (ICC) to see the proportion of variance explained by random effects
+library(performance)
+icc(H2_mixed)
+
+# Step 14: R-squared for the mixed-effects model (marginal and conditional R²)
+r2(H2_mixed)
 
 ```
 The code above does an assumption check for H2 and creates a model for H1. Below is my interpretation of everything to help me with the write-up later.  
