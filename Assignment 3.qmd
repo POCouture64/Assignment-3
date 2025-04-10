@@ -22,6 +22,7 @@ options(repos = c(CRAN = "https://cran.rstudio.com/"))
 install.packages("apaTables")
 
 library(haven)
+library(car)
 library(flexplot)
 library(tidyverse)
 library(dplyr)
@@ -80,6 +81,9 @@ acf(residuals_H1)
 # Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl and tipm_e and allows me to visualize the relationship.
 flexplot(swl ~ tipm_e, data = A4)
 
+apa.reg.table(H1, filename = "H1 Regression Table 2.doc",  table.number = 2)
+
+
 ```
 The code above does an assumption check for H1 and creates a model for H1. Below is my interpretation of everything to help me with the write-up later.  
 
@@ -129,6 +133,9 @@ acf(residuals_H2)
 # Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl and tipm_n and allows me to visualize the relationship.
 flexplot(swl ~ tipm_n, data = A4)
 
+
+apa.reg.table(H1, filename = "H1 Regression Table 1.doc",  table.number = 1)
+
 ```
 The code above does an assumption check for H2 and creates a model for H1. Below is my interpretation of everything to help me with the write-up later.  
 
@@ -158,13 +165,18 @@ Estimate for tipm_n = -0.47, meaning the association is negative and this is con
 # This is the code I will use to test all assumptions and calculate all the data needed for H3.
 
 # Step 1: Creating the multilevel regression model with both Extraversion (tipm_e) and Neuroticism (tipm_n)
-H3 <- lm(swl ~ tipm_e + tipm_n, data = A4)
+H3 <- lmer(swl ~ tipm_e + tipm_n + (1 | id), data = A4)
 
 # Step 2: Visualize the residuals for the model
 visualize(H3, plot = "residuals")
 
+# Step 2.5: Checking for multicolinearity
+lm_model <- lm(swl ~ tipm_e + tipm_n, data = A4)
+
+# Calculate VIFs
+vif(lm_model)
+
 # Step 3: Model Output for H3
-estimates(H3)
 summary(H3)
 
 # Step 4: Extract residuals for further assumption checks
@@ -178,9 +190,44 @@ acf(residuals_H3)
 # Since I have checked the assumptions above, this code will provide me with a linear regression model of the relationship between swl, tipm_e, and tipm_n and allows me to visualize the relationship.
 flexplot(swl ~ tipm_e + tipm_n, data = A4)
 
+# Step 7: Provide CI
+confint(H3, method = "profile")
 
+apa.reg.table(H3, conf.level = 0.95)
 
 ```
+The code above does an assumption check for H3 and creates a model for H1. Below is my interpretation of everything to help me with the write-up later.  
+
+-- The Histogram of Residuals shows that the residuals are normally distributed around 0. NORMALITY of RESIDUALS assumption is met. 
+
+-- The RDP is is slightly curved at the both ends. From the previous assignment Ashley said you're good to just mention it appears to be violated and that a quadratic or other model may be a better fit and move along as if the assumption was met! However, make sure to include in the results that results need to be interpreted with caution given the issue with linearity. LINEARITY assumption NOT met. 
+
+-- The S-L Plot is relatively flat and straight meaning this assumption is met. HOMOSKEDACITY assumption is met.
+
+-- The ACF plot shows that the majority of the lines fall within the CI lines meaning the answers from previous time points do not seem to significantly impact the scores at future time points. ASSUMPTION of INDEPENDENCE is met. 
+
+-- Multicolinearity was assessed using vif found that both tipm_e and tipm_n have low multicolinearity (1.124797 and 1.124797, respectively). Any value below 5 is considered to mean the assumption is met and given that our values are ~1 we can say this assumption is met. MULTICOLINEARITY assumption is met. 
+
+NEUROTICISM
+- The estimate for tipm_n is -0.23, indicating a moderate, negative association with satisfaction with life.
+
+- The 95% confidence interval for tipm_n is [-0.25, -0.21], which means we are 95% confident that the true relationship between neuroticism and life satisfaction lies within this range. Since the interval does not include 0, we can confidently conclude that neuroticism is negatively associated with life satisfaction.
+
+-- Individuals higher in neuroticism tend to report lower satisfaction with life.
+
+EXTRAVERSION
+- The estimate for tipm_e is 0.16, indicating a moderate, positive association with satisfaction with life.
+
+- The 95% confidence interval for tipm_e is [0.13, 0.18], meaning we are 95% confident that the true relationship between extraversion and life satisfaction lies within this range. Since the interval does not include 0, we can confidently conclude that extraversion is positively associated with life satisfaction.
+
+-- Individuals higher in extraversion tend to report higher satisfaction with life.
+
+RANDOM EFFECTS
+Random intercept variance (for id): The 95% confidence interval for the random intercept variance is [1.10, 1.32], suggesting that the variability in life satisfaction between individuals is substantial.
+
+Residual variance: The 95% confidence interval for the residual variance is [0.73, 0.76], indicating that within-person variability in life satisfaction is moderate.
+
+These random effects indicate that there is a significant amount of individual variability in life satisfaction (both between individuals and within individuals), underscoring the need for a multilevel model.
 
 
 
