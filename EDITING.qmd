@@ -41,7 +41,6 @@ vars_of_interest <- long_A4 %>% select(swl, tipm.E, tipm.N)
 
 apa.cor.table(vars_of_interest, filename = "Correlation Matrix.doc", table.number = 1)
 
-
 ```
 
 ```{r}
