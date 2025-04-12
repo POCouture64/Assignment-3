@@ -1,0 +1,201 @@
+---
+title: "Assignment 3 editing"
+author: "PO Couture"
+format: html
+editor: visual
+---
+
+## Assignment 3 Code
+
+```{r}
+#| label: Packages and Data
+
+install.packages("lme4")
+install.packages("sjPlot")
+install.packages("psych")
+install.packages("haven")
+install.packages("dplyr")
+
+library(lme4)
+library(performance)
+library(sjPlot)
+library(psych)
+library(haven)
+library(dplyr)
+library(knitr)
+
+# Load the data
+A4 <- read_sav("P6003.A4.sav")
+
+#Create id as a factor
+A4$id <- as.factor(A4$id)
+
+# Renaming the data to long_A4 so its easier to follow
+long_A4 <- A4  
+```
+
+```{r}
+#| label: Descriptive Stats
+
+vars_of_interest <- long_A4 %>% select(swl, tipm.E, tipm.N)
+
+apa.cor.table(vars_of_interest, filename = "Correlation Matrix.doc", table.number = 1)
+
+
+```
+
+```{r}
+#| label: Transform the Data
+
+wide_data <- A4 %>%
+  pivot_wider(
+    id_cols = id, 
+    names_from = day, 
+    values_from = c(tipm.E, tipm.N, swl),
+    names_glue = "{.value}_day{day}"
+  )
+
+# View the transformed data to ensure it's in the correct format
+head(wide_data)
+
+```
+
+
+```{r}
+#| label: H1 Code
+
+# Fit models using ML (REML = FALSE) for valid comparisons:
+H1_fixed <- lmer(swl ~ tipm.E + factor(day) + (1 | id), data = long_A4, REML = FALSE)
+H1_random <- lmer(swl ~ tipm.E + factor(day) + (tipm.E | id), data = long_A4, REML = FALSE)
+
+# Compare models using anova
+anova(H1_fixed, H1_random)
+
+summary(H1_random)
+
+# Calculate ICC and R² for the random slopes model
+H1_ICC <- icc(H1_random)   # H1_ICC is a tibble with the ICC values
+H1_r2 <- r2(H1_random)     # Returns a numeric vector: marginal and conditional R²
+
+# Display model results as an APA-styled table with p-values, SE, CI, ICC, and R².
+tab_model(H1_random, 
+          show.ci = TRUE, 
+          show.se = TRUE, 
+          show.p = TRUE, 
+          show.icc = TRUE, 
+          show.r2 = TRUE, 
+          dv.labels = "H1: Extraversion Predicting SWL",
+          title = paste("Table 2. Fixed Effects Estimates and 95% Confidence Intervals for H1 (Random Slopes Model)",
+                        "\nICC:", round(as.numeric(H1_ICC$ICC[1]), 2),
+                        " | R²_marginal:", round(as.numeric(H1_r2[1]), 2),
+                        " | R²_conditional:", round(as.numeric(H1_r2[2]), 2)))
+
+
+```
+
+```{r}
+#| label: H2 Code
+
+# H2: Neuroticism Predicting SWL
+
+# Fixed Intercept Model for H2
+H2_fixed <- lmer(swl ~ tipm.N + factor(day) + (1 | id), data = long_A4)
+
+# Random Slopes Model for H2
+H2_random <- lmer(swl ~ tipm.N + factor(day) + (tipm.N | id), data = long_A4)
+
+# Compare Fixed vs Random Slopes Model for H2
+anova(H2_fixed, H2_random)
+
+# Display model results for H2 using summary
+summary(H2_random)
+
+# Get Confidence Intervals using confint() with bootstrapping
+CI_H2_random <- confint(H2_random, method = "boot", nsim = 100)
+
+# Extract only the fixed effects confidence intervals
+CI_fixed_H2 <- CI_H2_random[1:length(fixef(H2_random)), ]
+
+# Create a data frame of model estimates and their CIs
+model_results_H2 <- data.frame(
+  Estimate = fixef(H2_random),
+  Lower_CI = CI_fixed_H2[, 1],
+  Upper_CI = CI_fixed_H2[, 2]
+)
+
+# Getting R^2 and ICC
+r2(H2_random)
+icc(H2_random)
+
+# Display model results with sjPlot
+tab_model(H2_random, show.ci = FALSE)
+
+# Round to APA format standards
+model_results_apa_H2 <- model_results_H2
+model_results_apa_H2$Estimate <- round(model_results_apa_H2$Estimate, 2)
+model_results_apa_H2$Lower_CI <- round(model_results_apa_H2$Lower_CI, 2)
+model_results_apa_H2$Upper_CI <- round(model_results_apa_H2$Upper_CI, 2)
+
+# Rename columns to APA-style labels
+colnames(model_results_apa_H2) <- c("b", "95% CI Lower", "95% CI Upper")
+
+# Print as APA-like table
+kable(model_results_apa_H2, caption = "Table 3. Fixed Effects Estimates and 95% Confidence Intervals for H2 (Random Slopes Model)")
+
+```
+
+```{r}
+#| label: H3 Code
+
+# H3: Extraversion and Neuroticism Predicting SWL
+
+# Fixed Intercept Model for H3
+H3_fixed <- lmer(swl ~ tipm.E + tipm.N + factor(day) + (1 | id), data = long_A4)
+
+# Random Slopes Model for H3
+H3_random <- lmer(swl ~ tipm.E + tipm.N + factor(day) + (tipm.E + tipm.N | id), data = long_A4)
+
+# Compare Fixed vs Random Slopes Model for H3
+anova(H3_fixed, H3_random)
+
+# Display model results for H3 using summary
+summary(H3_random)
+
+# Get Confidence Intervals using confint() with bootstrapping
+CI_H3_random <- confint(H3_random, method = "boot", nsim = 100)
+
+# Extract only the fixed effects confidence intervals
+CI_fixed_H3 <- CI_H3_random[1:length(fixef(H3_random)), ]
+
+# Create a data frame of model estimates and their CIs
+model_results_H3 <- data.frame(
+  Estimate = fixef(H3_random),
+  Lower_CI = CI_fixed_H3[, 1],
+  Upper_CI = CI_fixed_H3[, 2]
+)
+
+# Getting R^2 and ICC
+r2(H3_random)
+icc(H3_random)
+
+# Display model results with sjPlot (optional, no CIs shown)
+tab_model(H3_random, show.ci = FALSE)
+
+# Round to APA format standards
+model_results_apa_H3 <- model_results_H3
+model_results_apa_H3$Estimate <- round(model_results_apa_H3$Estimate, 2)
+model_results_apa_H3$Lower_CI <- round(model_results_apa_H3$Lower_CI, 2)
+model_results_apa_H3$Upper_CI <- round(model_results_apa_H3$Upper_CI, 2)
+
+# Rename columns to APA-style labels
+colnames(model_results_apa_H3) <- c("b", "95% CI Lower", "95% CI Upper")
+
+# Print as APA-like table
+kable(model_results_apa_H3, caption = "Table 4. Fixed Effects Estimates and 95% Confidence Intervals for H3 (Random Slopes Model)")
+
+```
+
+
+
+
+The `echo: false` option disables the printing of code (only output is displayed).
