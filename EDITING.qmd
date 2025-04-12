@@ -45,23 +45,6 @@ apa.cor.table(vars_of_interest, filename = "Correlation Matrix.doc", table.numbe
 ```
 
 ```{r}
-#| label: Transform the Data
-
-wide_data <- A4 %>%
-  pivot_wider(
-    id_cols = id, 
-    names_from = day, 
-    values_from = c(tipm.E, tipm.N, swl),
-    names_glue = "{.value}_day{day}"
-  )
-
-# View the transformed data to ensure it's in the correct format
-head(wide_data)
-
-```
-
-
-```{r}
 #| label: H1 Code
 
 # Fit models using ML (REML = FALSE) for valid comparisons:
@@ -79,7 +62,7 @@ H1_r2 <- r2(H1_random)     # Returns a numeric vector: marginal and conditional 
 
 # Display model results as an APA-styled table with p-values, SE, CI, ICC, and R².
 tab_model(H1_random, 
-          show.ci = TRUE, 
+          show.ci = FALSE, 
           show.se = TRUE, 
           show.p = TRUE, 
           show.icc = TRUE, 
