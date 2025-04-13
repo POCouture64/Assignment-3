@@ -1,0 +1,155 @@
+---
+title: "Assignment 3 editing"
+author: "PO Couture"
+format: html
+editor: visual
+---
+
+## Assignment 3 Code
+
+```{r}
+#| label: Packages and Data
+
+install.packages("lme4")
+install.packages("sjPlot")
+install.packages("psych")
+install.packages("haven")
+install.packages("dplyr")
+install.packages("parameters")
+
+library(lme4)
+library(performance)
+library(sjPlot)
+library(psych)
+library(haven)
+library(dplyr)
+library(knitr)
+library(apaTables)
+library(parameters)
+library(flexplot)
+
+# Load the data
+A4 <- read_sav("P6003.A4.sav")
+
+#Create id as a factor
+A4$id <- as.factor(A4$id)
+
+# Renaming the data to long_A4 so its easier to follow
+long_A4 <- A4  
+```
+
+```{r}
+#| label: Descriptive Stats
+
+vars_of_interest <- long_A4 %>% select(swl, tipm.E, tipm.N)
+
+apa.cor.table(vars_of_interest, filename = "Correlation Matrix.doc", table.number = 1)
+
+```
+
+```{r}
+#| label: H1 Code
+
+# H1: Extraversion Predicting SWL
+
+# Fixed effects model with day as a continuous variable
+H1_fixed <- lmer(swl ~ tipm.E + day + (1 | id), data = long_A4, REML = FALSE)
+
+# Random slopes model with day as a factor, allowing the extraversion slope to vary by participant
+H1_random <- lmer(swl ~ tipm.E + factor(day) + (tipm.E | id), data = long_A4, REML = FALSE)
+
+# Compare the fixed vs. random slopes models using the classroom method
+model.comparison(H1_fixed, H1_random)
+
+# Optional: Run a model without the day variable to examine if day adds meaningful information
+H1_no_day <- lmer(swl ~ tipm.E + (1 | id), data = long_A4, REML = FALSE)
+model.comparison(H1_no_day, H1_random)
+
+# Check model diagnostics for the random slopes model
+check_model(H1_random)
+
+# Calculate ICC and R² for the random slopes model
+H1_ICC <- icc(H1_random)
+H1_r2 <- r2(H1_random)
+
+# Obtain model parameters with Wald confidence intervals
+H1_params <- model_parameters(H1_random, ci_method = "wald")
+print(H1_params)
+
+# Display APA-styled results in a table
+kable(H1_params, digits = 3, caption = "Table 2. Model Parameters with Wald CIs for H1")
+
+```
+
+```{r}
+#| label: H2 Code
+
+# H2: Neuroticism Predicting SWL
+
+# Fixed effects model with day as a continuous variable
+H2_fixed <- lmer(swl ~ tipm.N + day + (1 | id), data = long_A4, REML = FALSE)
+
+# Random slopes model with day as a factor, allowing the neuroticism slope to vary by participant
+H2_random <- lmer(swl ~ tipm.N + factor(day) + (tipm.N | id), data = long_A4, REML = FALSE)
+
+# Compare the fixed vs. random slopes models using the classroom method
+model.comparison(H2_fixed, H2_random)
+
+# Optional: Run a model without the day variable to examine if day adds meaningful information
+H2_no_day <- lmer(swl ~ tipm.N + (1 | id), data = long_A4, REML = FALSE)
+model.comparison(H2_no_day, H2_random)
+
+# Check model diagnostics for the random slopes model
+check_model(H2_random)
+
+# Calculate ICC and R² for the random slopes model
+H2_ICC <- icc(H2_random)
+H2_r2 <- r2(H2_random)
+
+# Obtain model parameters with Wald confidence intervals
+H2_params <- model_parameters(H2_random, ci_method = "wald")
+print(H2_params)
+
+# Display APA-styled results in a table
+kable(H2_params, digits = 3, caption = "Table 3. Model Parameters with Wald CIs for H2")
+
+```
+
+```{r}
+#| label: H3 Code
+
+# H3: Extraversion and Neuroticism as Joint Predictors of SWL
+
+# Fixed effects model with day as a continuous variable, including both extraversion and neuroticism
+H3_fixed <- lmer(swl ~ tipm.E + tipm.N + day + (1 | id), data = long_A4, REML = FALSE)
+
+# Random slopes model with day as a factor, allowing both extraversion and neuroticism slopes to vary by participant
+H3_random <- lmer(swl ~ tipm.E + tipm.N + factor(day) + (tipm.E + tipm.N | id), data = long_A4, REML = FALSE)
+
+# Compare the fixed vs. random slopes models using the classroom method
+model.comparison(H3_fixed, H3_random)
+
+# Optional: Run a model without the day variable to examine if day adds meaningful information
+H3_no_day <- lmer(swl ~ tipm.E + tipm.N + (1 | id), data = long_A4, REML = FALSE)
+model.comparison(H3_no_day, H3_random)
+
+# Check model diagnostics for the random slopes model
+check_model(H3_random)
+
+# Calculate ICC and R² for the random slopes model
+H3_ICC <- icc(H3_random)
+H3_r2 <- r2(H3_random)
+
+# Obtain model parameters with Wald confidence intervals
+H3_params <- model_parameters(H3_random, ci_method = "wald")
+print(H3_params)
+
+# Display APA-styled results in a table
+kable(H3_params, digits = 3, caption = "Table 4. Model Parameters with Wald CIs for H3")
+
+```
+
+
+
+
+The `echo: false` option disables the printing of code (only output is displayed).
