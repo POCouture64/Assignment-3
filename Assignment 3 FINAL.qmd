@@ -19,15 +19,11 @@ install.packages("parameters")
 install.packages("officer")
 
 library(lme4)
-library(performance)
 library(sjPlot)
 library(psych)
 library(haven)
 library(dplyr)
-library(knitr)
-library(apaTables)
 library(parameters)
-library(flexplot)
 library(officer)
 
 # Load the data
